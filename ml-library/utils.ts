@@ -56,19 +56,3 @@ export function shuffleArrays<T, U>(array1: T[], array2: U[]): [T[], U[]] {
   return [shuffledArray1, shuffledArray2];
 }
 
-export function test_dataset(
-    network: any[],
-    x_test:  number[],
-    y_test: number[][]
-  ) {
-    const predictions = [];
-    for (let i = 0; i < x_test.length; i++) {
-      const x = Matrix.fromArray([x_test[i]]);
-      let y_pred = x;
-      for (const layer of network) {
-        y_pred = layer.forward(y_pred);
-      }
-      predictions.push([y_pred.data[0][0]]);
-    }
-    return predictions;
-  }

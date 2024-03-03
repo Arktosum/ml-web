@@ -7,7 +7,7 @@ export class Dense {
     constructor(inputSize: number, outputSize: number) {
         // Initialize weights and biases randomly
         this.weights = Matrix.randomNormal(outputSize, inputSize);
-        this.biases = Matrix.randomNormal(outputSize, 1);
+        this.biases = new Matrix(outputSize, 1,0); // initialize biases with 0.0 is the most common way. start with an unbiased network.
         this.input = new Matrix(inputSize, 1); // Just for the unassigned lerror to go away
     }
     forward(input: Matrix): Matrix {
@@ -52,5 +52,7 @@ export class ReLU {
         const activationGradient = ReLU.derivative(this.input).map((value, i, j) => value * gradient.data[i][j]);
         return activationGradient;
     }
-
 }
+
+
+
