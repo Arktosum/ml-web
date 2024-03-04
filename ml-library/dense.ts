@@ -55,4 +55,24 @@ export class ReLU {
 }
 
 
+export class Sigmoid {
+    input: Matrix;
+    constructor(){
+        this.input = new Matrix(0, 0); // Just for the unassigned lerror to go away
+    }
+    static apply(matrix: Matrix): Matrix {
+        return matrix.map((value: number) => Math.max(0, value));
+    }
 
+    static derivative(matrix: Matrix): Matrix {
+        return matrix.map((value: number) => value > 0 ? 1 : 0);
+    }
+    forward(input: Matrix): Matrix{
+        this.input = input;
+        return ReLU.apply(this.input);
+    }
+    backward(gradient: Matrix,learningRate:number): Matrix{
+        const activationGradient = ReLU.derivative(this.input).map((value, i, j) => value * gradient.data[i][j]);
+        return activationGradient;
+    }
+}
