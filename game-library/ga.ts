@@ -1,6 +1,16 @@
 import { Canvas } from '../canvas-library/canvas';
 import {Bird, Pipe, vec2} from './flappy'
 
+
+function getRandomColor(){
+    let color = "abcdef"
+    let colorString = "#";
+    for(let i = 0 ; i < 6 ; i++){
+        let randInd = Math.min(Math.floor(Math.random() * 6),5);
+        colorString += color[randInd];
+    }
+    return colorString;
+}
 export class GeneticAlgorithm{
     count: number;
     population: Bird[];
@@ -14,11 +24,11 @@ export class GeneticAlgorithm{
         this.generation = 1;
         this.initialPosition = initialPosition
         this.canvas = canvas;
-        this.champion = new Bird(this.initialPosition,this.canvas);
+        this.champion = new Bird(this.initialPosition,this.canvas,getRandomColor());
     }
     initializePopulation(){
         for(let i = 0; i < this.count; i++){
-            this.population.push(new Bird(this.initialPosition,this.canvas));
+            this.population.push(new Bird(this.initialPosition,this.canvas,getRandomColor()));
         }
     }
     isAllDead(){
@@ -58,6 +68,7 @@ export class GeneticAlgorithm{
         bestBirdClone.color = 'purple';
         let championFitness = this.champion.fitnessScore();
         if(bestfitness > championFitness){
+            console.log("Found new champion!");
             this.champion = bestBird.clone();
         }
         else{
@@ -92,7 +103,7 @@ export class GeneticAlgorithm{
     }
     draw(){
         for(let bird of this.population){
-            bird.draw();
+            if(!bird.dead) bird.draw();
         }
     }
 

@@ -2,12 +2,15 @@ import './style.css'
 import {Canvas} from '../canvas-library/canvas'
 import {Bird, Pipe} from '../game-library/flappy'
 import {GeneticAlgorithm} from '../game-library/ga'
+import {NeuralCanvas} from '../game-library/neural'
 
 const CANVAS_SCALE = 50;
 const CANVAS_WIDTH = 16 * CANVAS_SCALE;
 const CANVAS_HEIGHT = 9 * CANVAS_SCALE;
 const CANVAS_ELEMENT = document.getElementById('my-canvas') as HTMLCanvasElement
+const NEURAL_CANVAS_ELEMENT = document.getElementById('neural-canvas') as HTMLCanvasElement
 const CANVAS = new Canvas(CANVAS_WIDTH,CANVAS_HEIGHT,CANVAS_ELEMENT);
+const NEURAL_CANVAS = new NeuralCanvas(CANVAS_WIDTH,CANVAS_HEIGHT,NEURAL_CANVAS_ELEMENT);
 const FPS = 60;
 
 const INITIAL_BIRD_POSITION = {x: 0.1*CANVAS_WIDTH, y: 0.5*CANVAS_HEIGHT}
@@ -54,6 +57,9 @@ async function draw(deltaTime : number){
     pipes = [];
     addPipe();
   }
+
+  NEURAL_CANVAS.setBackgroundColor('gray');
+  NEURAL_CANVAS.draw(birdGA.population.slice(-1)[0].brain);
 }
 let lastTime = 0;
 function animate(timestamp: number) {

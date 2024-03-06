@@ -21,12 +21,12 @@ export class Bird{
   pipeCrossPoint: number;
   brain: Network;
   initialPosition: vec2;
-  constructor(initialPosition : vec2,canvas : Canvas){
+  constructor(initialPosition : vec2,canvas : Canvas,color : string){
     this.initialPosition = initialPosition
     this.position = {x: initialPosition.x, y: initialPosition.y};
     this.canvas = canvas;
     this.radius = 20;
-    this.color = 'yellow';
+    this.color = color
     this.velocity = {x : 0 , y : 0};
     this.gravity = 0.1;
     this.dead = false;
@@ -43,7 +43,7 @@ export class Bird{
 
   clone(){
     // Gives the exact copy of this bird
-    let babyBird = new Bird(this.initialPosition,this.canvas);
+    let babyBird = new Bird(this.initialPosition,this.canvas,this.color);
     this.brain.network=[]
     for(let layer of this.brain.network){
       if(layer.type == 'DENSE'){
@@ -110,7 +110,7 @@ export class Bird{
   }
   kill(){
     if(this.dead) return;
-    this.color = '#ff00000f'
+    // this.color = '#ff00000f'
     this.lifeTime.deathTime = Date.now();
     this.dead = true;
     
@@ -125,6 +125,8 @@ export class Bird{
     let right = {x : this.position.x + this.radius , y : this.position.y };
 
     if((up.y <= 0) || (down.y >= this.canvas.canvas.height)){
+      this.pipesCrossed = 0;
+      this.lifeTime.birthTime = Date.now();
       this.kill();
     }
   }
