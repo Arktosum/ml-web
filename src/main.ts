@@ -1,77 +1,76 @@
 import './style.css'
 import {Canvas} from '../canvas-library/canvas'
-import {Bird, Pipe} from '../game-library/flappy'
-import {GeneticAlgorithm} from '../game-library/ga'
-import {NeuralCanvas} from '../game-library/neural'
+import { Bird } from './flappyBird/bird';
+import { Pipe } from './flappyBird/pipe';
 
-const CANVAS_SCALE = 50;
-const CANVAS_WIDTH = 16 * CANVAS_SCALE;
-const CANVAS_HEIGHT = 9 * CANVAS_SCALE;
-const CANVAS_ELEMENT = document.getElementById('my-canvas') as HTMLCanvasElement
-const NEURAL_CANVAS_ELEMENT = document.getElementById('neural-canvas') as HTMLCanvasElement
-const CANVAS = new Canvas(CANVAS_WIDTH,CANVAS_HEIGHT,CANVAS_ELEMENT);
-const NEURAL_CANVAS = new NeuralCanvas(CANVAS_WIDTH,CANVAS_HEIGHT,NEURAL_CANVAS_ELEMENT);
-const FPS = 60;
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+  <canvas id="my-canvas"></canvas>
+`
 
-const INITIAL_BIRD_POSITION = {x: 0.1*CANVAS_WIDTH, y: 0.5*CANVAS_HEIGHT}
+const SCALE = 50;
+const WIDTH = 16 * SCALE;
+const HEIGHT = 9 * SCALE;
+const canvas : HTMLCanvasElement | null = document.querySelector('#my-canvas');
+const ctx = new Canvas(WIDTH,HEIGHT,canvas);
 
-const birdGA = new GeneticAlgorithm(200,INITIAL_BIRD_POSITION,CANVAS);
-birdGA.initializePopulation()
 
-let pipes: Pipe[] = [] 
-
-function addPipe(){
-  let newPipe = new Pipe({x:CANVAS_WIDTH, y:0},CANVAS);
-  newPipe.height = CANVAS.canvas.height*0.7*Math.random();
-  newPipe.velocity.x = -2
-  pipes.push(newPipe);
+const POPULATION = 1;
+const BIRDS : Bird[] = [];
+for(let i = 0 ; i < POPULATION ; i++){
+  BIRDS.push(new Bird({x : WIDTH*0.1,y:HEIGHT/2},'yellow',20,ctx));
 }
+
+const PIPES  : Pipe[] = [];
+PIPES.push(new Pipe({x : WIDTH+WIDTH*0.2,y : 0},50,150,'green',ctx));
+
 setInterval(()=>{
-  addPipe();
-},1000*3)
+  PIPES.push(new Pipe({x : WIDTH+WIDTH*0.2,y : 0},50,150,'green',ctx));
+},1000*4)
 
-// document.addEventListener('keypress',(e: KeyboardEvent)=>{
-//   bird.jump();
-// })
-addPipe();
+function loop(deltaTime : number){
+  ctx.setBackgroundColor('black');
 
-async function draw(deltaTime : number){
-  CANVAS.setBackgroundColor('black');
-  birdGA.draw();
-  let latestPipe = pipes[0];
-  await birdGA.act(latestPipe);
-  birdGA.update(deltaTime);
-  for(let pipe of pipes){
-    pipe.draw();
-    pipe.update(deltaTime); 
-  }
-  if(latestPipe.position.x + latestPipe.width <= 0){
-    pipes.shift();
-    for(let bird of birdGA.population){
-      if(!bird.dead) bird.pipesCrossed++;
+  for(let bird of BIRDS){
+    bird.draw();
+    bird.think();
+    bird.update(deltaTime);
+    for(let pipe of PIPES){
+      bird.collide(pipe);
     }
   }
-  birdGA.collision(latestPipe);
-  if(birdGA.isAllDead()){
-    birdGA.naturalSelection();
-    pipes = [];
-    addPipe();
+  for(let pipe of PIPES){
+    pipe.draw();
+    pipe.update(deltaTime);
   }
-
-  NEURAL_CANVAS.setBackgroundColor('gray');
-  NEURAL_CANVAS.draw(birdGA.population.slice(-1)[0].brain);
-}
-let lastTime = 0;
-function animate(timestamp: number) {
-  const deltaTime = timestamp - lastTime;
-  lastTime = timestamp;
-  if (!isNaN(deltaTime)) {
-    draw(deltaTime/10);
-  }
-  setTimeout(() => {
-    requestAnimationFrame(animate);
-  }, 1000 * (1/FPS));
 }
 
-animate(lastTime);
- 
+// document.addEventListener('keydown',(e : KeyboardEvent) => {
+//   if(e.key == ' '){
+//     bird.jump();
+//   }
+// })
+  // if(bird.dead){
+  //   ctx.drawText(`Score : ${(bird.deathTime - bird.birthTime)/1000}`,100,100)
+  // }
+  // else{
+  //   ctx.drawText(`Score : ${(Date.now() - bird.birthTime)/1000}`,100,100)
+  // }
+
+
+const frequency = 60;
+const timeInterval = 1000/frequency;
+
+let previousTime = Date.now();
+function animate(){
+  requestAnimationFrame(animate);
+  const currentTime = Date.now();
+  const dt = currentTime - previousTime;
+  if(dt >= timeInterval){
+    loop(dt);
+    previousTime = currentTime;
+  }
+}
+
+requestAnimationFrame(animate);
+
+console.log(ctx);

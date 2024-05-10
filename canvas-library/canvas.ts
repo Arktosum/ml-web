@@ -1,15 +1,25 @@
 export class Canvas {
-    canvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement | null;
     context: CanvasRenderingContext2D;
-    constructor(width: number, height: number, canvasElement: HTMLCanvasElement) {
+    width: number;
+    height: number;
+    constructor(width: number, height: number, canvasElement: HTMLCanvasElement | null) {
+      if(!canvasElement) throw new Error("CanvasElement cannot be null!"); 
       this.canvas = canvasElement;
+      this.width = width;
+      this.height = height;
       this.canvas.width = width;
       this.canvas.height = height;
-      this.context = this.canvas.getContext("2d");
+      const ctx = this.canvas.getContext("2d");
+      if(!ctx) throw new Error("Canvas ctx cannot be null!");
+      this.context = ctx;
       document.body.appendChild(this.canvas);
     }
     clear() {
-      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.context.clearRect(0, 0, this.width, this.height);
+    }
+    inCanvasBounds(x : number, y : number){
+      return (0 <= x) && (x <= this.width) && (0<=y) && (y <= this.height);
     }
     drawRect(
       x: number,
@@ -67,6 +77,6 @@ export class Canvas {
     }
   
     setBackgroundColor(color: string | CanvasGradient | CanvasPattern) {
-      this.drawRect(0, 0, this.canvas.width, this.canvas.height, color);
+      this.drawRect(0, 0, this.width, this.height, color);
     }
   }

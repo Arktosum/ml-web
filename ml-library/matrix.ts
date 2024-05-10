@@ -1,5 +1,4 @@
 export class Matrix {
-    
     rows: number;
     cols: number;
     data: number[][];
