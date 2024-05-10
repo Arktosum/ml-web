@@ -3,14 +3,14 @@ export class Matrix {
     cols: number;
     data: number[][];
     shape : [number,number];
-    constructor(rows: number, cols: number, initialValue: number = 0) {
+    constructor(rows: number, cols: number,randomize : boolean = false, initialValue: number = 0) {
         this.rows = rows;
         this.cols = cols;
         this.data = [];
         for (let i = 0; i < this.rows; i++) {
             this.data[i] = [];
             for (let j = 0; j < this.cols; j++) {
-                this.data[i][j] = initialValue;
+                this.data[i][j] = randomize? Math.random() * 2 - 1 : initialValue;
             }
         }
         this.shape = [this.rows,this.cols]

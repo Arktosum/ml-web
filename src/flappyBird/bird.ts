@@ -1,12 +1,14 @@
 import { Canvas } from "../../canvas-library/canvas"
+import { Matrix } from "../../ml-library/matrix"
 import { Dense, NeuralNetwork, ReLU, Sigmoid } from "../../ml-library/neural"
+import { GAEntity } from "./ga"
 import { Pipe } from "./pipe"
 
 export type vec2 = {
     x : number
     y : number
 }
-export class Bird{
+export class Bird implements GAEntity{
     position: vec2
     velocity: vec2
     color: string
@@ -19,6 +21,7 @@ export class Bird{
     birthTime: number
     deathTime: number
     brain: NeuralNetwork
+    score : number
     constructor(position : vec2 ,color : string,radius : number,context : Canvas){
       this.position = position
       this.color = color
@@ -34,32 +37,54 @@ export class Bird{
         y : 0.001
       }
       this.lastJumped = Date.now();
-      this.jumpTimeout =  100 ; // ms;
+      this.jumpTimeout =  200 ; // ms;
   
       this.birthTime = Date.now();
       this.deathTime = Date.now();
       this.brain = new NeuralNetwork();
   
       this.brain.network = [
-        new Dense(4,5),
+        new Dense(4,2),
         new ReLU(),
-        new Dense(5,1),
+        new Dense(2,1),
         new Sigmoid()
       ]
+      this.score = 0;
   
+    }
+    mutate(mutationRate : number){
+        this.brain.mutate(mutationRate);
+    }
+    clone(){
+        const child = new Bird({x : this.context.width*0.1,y:this.context.height/2},'yellow',20,this.context);
+        child.brain = this.brain.clone();
+        return child;
     }
     die(){
       this.deathTime = Date.now();
       this.dead = true;
+      this.score += (this.deathTime - this.birthTime)/1000;
       // location.reload();
     }
-    think(){
-  
+    think(closestPipe : Pipe){
+        if(this.dead) return;
+        const yPos = this.position.y;
+        const yVel = this.velocity.y;
+        const xDist = Math.sqrt(((closestPipe.position.x + closestPipe.width/2) - this.position.x)**2)
+        const yDist = Math.sqrt(((closestPipe.position.y + closestPipe.topHeight + closestPipe.gap/2) - this.position.y)**2)
+
+        this.context.drawLine((closestPipe.position.x + closestPipe.width/2),(closestPipe.position.y + closestPipe.topHeight + closestPipe.gap/2),this.position.x,this.position.y,'black',0.1)
+        const birdInputMatrix = new Matrix(4,1);
+        birdInputMatrix.data = [[yPos],[yVel],[xDist],[yDist]]
+        const prediction = this.brain.forward(birdInputMatrix);
+        const shouldJump = prediction.data[0][0] >= 0.5;
+        if(shouldJump) this.jump();
     }
     jump(){
       let currentTime = Date.now();
       if (currentTime - this.lastJumped < this.jumpTimeout) return;
-      this.velocity.y -= 0.5;
+      this.velocity.y -= 0.3;
+      this.lastJumped = currentTime;
     }
     rectangularCollision(px:number,py:number,x:number,y:number,width:number,height:number){
       return (x<=px) && (px<=(x+width)) && (y<=py)&&(py<=(y+height));
@@ -78,7 +103,10 @@ export class Bird{
           break;
         };
       }
-      if(collision) this.die();
+      if(collision) {
+        this.score -= 50; // Penalty for hitting pipe
+        this.die();
+      }
     }
     update(deltaTime : number){
       if(this.dead) return;
@@ -87,6 +115,7 @@ export class Bird{
   
       if(!this.context.inCanvasBounds(this.position.x,this.position.y + this.radius) || 
       !this.context.inCanvasBounds(this.position.x,this.position.y - this.radius)){
+        this.score -= 200; // Penalty for hitting canvas bounds
         this.die();
         return;
       }

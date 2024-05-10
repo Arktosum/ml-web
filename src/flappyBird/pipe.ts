@@ -29,10 +29,6 @@ export class Pipe{
     }
     update(deltaTime : number){
       this.position.x += this.velocity.x * deltaTime;
-      
-      if(this.position.x  < -100){
-        // destroy pipe.
-      }
     }
     draw(){
       this.topPosition = this.position;
