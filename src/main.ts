@@ -13,7 +13,7 @@ const WIDTH = 16 * SCALE;
 const HEIGHT = 9 * SCALE;
 const canvas : HTMLCanvasElement | null = document.querySelector('#my-canvas');
 const ctx = new Canvas(WIDTH,HEIGHT,canvas);
-const POPULATION = 1000;
+const POPULATION = 2500;
 
 const geneticAlgorithm = new GeneticAlgorithm(POPULATION);
 let BIRDS = geneticAlgorithm.population;

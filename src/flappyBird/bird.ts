@@ -37,16 +37,18 @@ export class Bird implements GAEntity{
         y : 0.001
       }
       this.lastJumped = Date.now();
-      this.jumpTimeout =  200 ; // ms;
+      this.jumpTimeout =  100 ; // ms;
   
       this.birthTime = Date.now();
       this.deathTime = Date.now();
       this.brain = new NeuralNetwork();
   
       this.brain.network = [
-        new Dense(4,2),
+        new Dense(4,5),
         new ReLU(),
-        new Dense(2,1),
+        new Dense(5,3),
+        new ReLU(),
+        new Dense(3,1),
         new Sigmoid()
       ]
       this.score = 0;
@@ -68,10 +70,10 @@ export class Bird implements GAEntity{
     }
     think(closestPipe : Pipe){
         if(this.dead) return;
-        const yPos = this.position.y;
+        const yPos = this.position.y/this.context.height;
         const yVel = this.velocity.y;
-        const xDist = Math.sqrt(((closestPipe.position.x + closestPipe.width/2) - this.position.x)**2)
-        const yDist = Math.sqrt(((closestPipe.position.y + closestPipe.topHeight + closestPipe.gap/2) - this.position.y)**2)
+        const xDist = Math.sqrt(((closestPipe.position.x + closestPipe.width/2) - this.position.x)**2)/this.context.width;
+        const yDist = Math.sqrt(((closestPipe.position.y + closestPipe.topHeight + closestPipe.gap/2) - this.position.y)**2)/this.context.height;
 
         this.context.drawLine((closestPipe.position.x + closestPipe.width/2),(closestPipe.position.y + closestPipe.topHeight + closestPipe.gap/2),this.position.x,this.position.y,'black',0.1)
         const birdInputMatrix = new Matrix(4,1);
@@ -83,7 +85,7 @@ export class Bird implements GAEntity{
     jump(){
       let currentTime = Date.now();
       if (currentTime - this.lastJumped < this.jumpTimeout) return;
-      this.velocity.y -= 0.3;
+      this.velocity.y -= 0.4;
       this.lastJumped = currentTime;
     }
     rectangularCollision(px:number,py:number,x:number,y:number,width:number,height:number){
@@ -121,7 +123,7 @@ export class Bird implements GAEntity{
       }
     }
     draw() {
-      if(this.dead) this.color = 'red';
+      if(this.dead) this.color = '#ff00000a';
       this.context.drawCircle(this.position.x,this.position.y,this.radius,this.color)
     }
   }
